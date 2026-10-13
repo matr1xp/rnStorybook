@@ -4,7 +4,7 @@ A starter project for building React Native components in isolation with [Storyb
 
 - **React Native 0.81** (bare CLI project, no Expo), TypeScript, New Architecture
 - **Storybook 10** on-device UI with the Controls and Actions add-ons
-- Shell components to build on: `Button`, `TextField`, `Card`, `Header`
+- Shell components to build on: `Button`, `TextField`, `Card`, `Header`, `Toast`
 - Shared design tokens (colors, spacing, radii, typography)
 
 ## Prerequisites
@@ -131,6 +131,7 @@ src/
     Card/
     Header/
     TextField/
+    Toast/
     index.ts              # Re-exports all components
   theme/
     index.ts              # colors, spacing, radius, typography tokens
