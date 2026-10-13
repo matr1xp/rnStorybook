@@ -4,6 +4,8 @@ export const colors = {
   secondary: '#F2F4F7',
   secondaryText: '#333333',
   danger: '#E5484D',
+  success: '#12A150',
+  warning: '#F5A524',
   text: '#1A1A1A',
   muted: '#6B7280',
   border: '#D0D5DD',
