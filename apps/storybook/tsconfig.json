@@ -1,5 +1,8 @@
 {
   "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "customConditions": ["react-native", "matr1xp-ui-source"]
+  },
   "include": ["**/*.ts", "**/*.tsx", ".rnstorybook/**/*"],
   "exclude": ["**/node_modules", "**/Pods"]
 }

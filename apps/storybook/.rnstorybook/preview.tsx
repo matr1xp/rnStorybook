@@ -1,7 +1,7 @@
 import type { Preview } from '@storybook/react-native';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '../src/theme';
+import { colors, spacing } from '@matr1xp/ui';
 
 const preview: Preview = {
   decorators: [
