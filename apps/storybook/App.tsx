@@ -14,8 +14,14 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { Button, Card, Header, TextField } from './src/components';
-import { colors, spacing } from './src/theme';
+import {
+  Button,
+  Card,
+  Header,
+  TextField,
+  colors,
+  spacing,
+} from '@matr1xp/ui';
 
 function App() {
   return (

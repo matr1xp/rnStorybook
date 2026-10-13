@@ -6,6 +6,9 @@ A starter project for building React Native components in isolation with [Storyb
 - **Storybook 10** on-device UI with the Controls and Actions add-ons
 - Shell components to build on: `Button`, `TextField`, `Card`, `Header`, `Toast`
 - Shared design tokens (colors, spacing, radii, typography)
+- npm workspaces: the components are the `@matr1xp/ui` package in `packages/ui`, and the Storybook app is in `apps/storybook`
+
+To use the components in other React Native apps, see [Sharing the UI components across projects](docs/sharing-components.md).
 
 ## Prerequisites
 
@@ -21,7 +24,7 @@ Complete the React Native [Set Up Your Environment](https://reactnative.dev/docs
 
 ## Setup
 
-Install JavaScript dependencies:
+Run all `npm` commands from the repo root. Install JavaScript dependencies for every workspace:
 
 ```sh
 npm install
@@ -32,9 +35,9 @@ npm install
 Install the CocoaPods dependencies. Run this again whenever you add or update a native dependency:
 
 ```sh
-cd ios
+cd apps/storybook/ios
 LANG=en_US.UTF-8 pod install
-cd ..
+cd ../../..
 ```
 
 > If you prefer the CocoaPods version pinned in the `Gemfile`, run `bundle install` once, then use `bundle exec pod install`.
@@ -48,7 +51,7 @@ export ANDROID_HOME="$HOME/Library/Android/sdk"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 ```
 
-or create `android/local.properties` (it is git-ignored and machine-specific):
+or create `apps/storybook/android/local.properties` (it is git-ignored and machine-specific):
 
 ```properties
 sdk.dir=/Users/<you>/Library/Android/sdk
@@ -87,7 +90,7 @@ npm run android
 To speed up Android debug builds, compile only for the running emulator's CPU architecture:
 
 ```sh
-npx react-native run-android --active-arch-only
+npm run android -w apps/storybook -- --active-arch-only
 ```
 
 You only need to rebuild the native app after changing native code or dependencies. For JavaScript changes, just reload:
@@ -106,50 +109,62 @@ When the app opens in Storybook mode:
 
 ## Scripts
 
+Run these from the repo root.
+
 | Script | What it does |
 | --- | --- |
 | `npm run storybook` | Starts Metro with Storybook enabled |
 | `npm start` | Starts Metro for the regular app |
 | `npm run ios` | Builds and launches the iOS app |
 | `npm run android` | Builds and launches the Android app |
-| `npm run storybook:generate` | Regenerates `.rnstorybook/storybook.requires.ts` |
-| `npm run typecheck` | Runs the TypeScript compiler (`tsc --noEmit`) |
-| `npm run lint` | Runs ESLint |
-| `npm test` | Runs Jest |
+| `npm run storybook:generate` | Regenerates `apps/storybook/.rnstorybook/storybook.requires.ts` |
+| `npm run typecheck` | Runs the TypeScript compiler (`tsc --noEmit`) in every workspace |
+| `npm run lint` | Runs ESLint in every workspace |
+| `npm test` | Runs Jest in every workspace |
+| `npm run prepare -w packages/ui` | Builds the `@matr1xp/ui` package into `packages/ui/lib` |
 
 ## Project structure
 
 ```
-.rnstorybook/
-  main.ts                 # Where stories live + enabled on-device add-ons
-  preview.tsx             # Global decorators and parameters for every story
-  index.tsx               # Storybook UI entry point
-  storybook.requires.ts   # Auto-generated story index (do not edit)
-src/
-  components/
-    Button/               # Button.tsx, Button.stories.tsx, index.ts
-    Card/
-    Header/
-    TextField/
-    Toast/
-    index.ts              # Re-exports all components
-  theme/
-    index.ts              # colors, spacing, radius, typography tokens
-App.tsx                   # Renders Storybook or the app, based on STORYBOOK_ENABLED
-metro.config.js           # Wraps Metro with withStorybook
-babel.config.js           # Inlines STORYBOOK_ENABLED; Reanimated worklets plugin
+package.json              # Workspace root: lists the workspaces and the scripts above
+packages/ui/              # @matr1xp/ui, the shared component package
+  package.json            # Entry points, build config, peer dependencies
+  src/
+    index.ts              # Exports all components and theme tokens
+    components/
+      Button/             # Button.tsx, Button.stories.tsx, index.ts
+      Card/
+      Header/
+      TextField/
+      Toast/
+      index.ts            # Re-exports all components
+    theme/
+      index.ts            # colors, spacing, radius, typography tokens
+apps/storybook/           # The Storybook app (ios/, android/)
+  .rnstorybook/
+    main.ts               # Where stories live + enabled on-device add-ons
+    preview.tsx           # Global decorators and parameters for every story
+    index.tsx             # Storybook UI entry point
+    storybook.requires.ts # Auto-generated story index (do not edit)
+  App.tsx                 # Renders Storybook or the app, based on STORYBOOK_ENABLED
+  metro.config.js         # Watches the repo root; wraps Metro with withStorybook
+  babel.config.js         # Inlines STORYBOOK_ENABLED; Reanimated worklets plugin
+docs/
+  sharing-components.md   # Versioning and publishing the components for other apps
 ```
+
+The Storybook app imports `@matr1xp/ui` like any other app would. Its Metro, TypeScript and Jest configs ask for the package's `matr1xp-ui-source` export condition, so they load the TypeScript source in `packages/ui/src` directly, and edits show up without a build.
 
 ### How the Storybook switch works
 
 `npm run storybook` sets `STORYBOOK_ENABLED=true`. This has two effects:
 
-1. `metro.config.js` turns on `withStorybook`. When it is off, Metro strips Storybook modules out of the bundle, so the regular app doesn't ship them.
-2. `babel.config.js` inlines `process.env.STORYBOOK_ENABLED`, and `App.tsx` uses it to decide whether to render the Storybook UI or the app.
+1. `apps/storybook/metro.config.js` turns on `withStorybook`. When it is off, Metro strips Storybook modules out of the bundle, so the regular app doesn't ship them.
+2. `apps/storybook/babel.config.js` inlines `process.env.STORYBOOK_ENABLED`, and `App.tsx` uses it to decide whether to render the Storybook UI or the app.
 
 ## Adding a component
 
-1. Create a folder in `src/components/`, for example `src/components/Badge/`.
+1. Create a folder in `packages/ui/src/components/`, for example `packages/ui/src/components/Badge/`.
 2. Add the component (`Badge.tsx`), an `index.ts` that re-exports it, and a story file (`Badge.stories.tsx`):
 
    ```tsx
@@ -170,10 +185,12 @@ babel.config.js           # Inlines STORYBOOK_ENABLED; Reanimated worklets plugi
    export const Default: Story = {};
    ```
 
-3. Export it from `src/components/index.ts`.
-4. Any `*.stories.tsx` file under `src/` is picked up automatically while Metro runs in Storybook mode. If a new story doesn't appear, run `npm run storybook:generate` and reload.
+3. Export it from `packages/ui/src/components/index.ts`.
+4. Any `*.stories.tsx` file under `packages/ui/src/` is picked up automatically while Metro runs in Storybook mode. If a new story doesn't appear, run `npm run storybook:generate` and reload.
 
-Use the tokens from `src/theme` instead of hard-coded values, so components stay consistent.
+Use the tokens from `packages/ui/src/theme` instead of hard-coded values, so components stay consistent.
+
+Other apps get the new component only after a new version of `@matr1xp/ui` is released. See [Sharing the UI components across projects](docs/sharing-components.md).
 
 ## Troubleshooting
 
@@ -183,16 +200,16 @@ These issues came up while setting up this project. The fixes are already in pla
 CocoaPods needs a UTF-8 locale. Run it as `LANG=en_US.UTF-8 pod install`, or add `export LANG=en_US.UTF-8` to your shell profile.
 
 **Xcode build fails with "deployment target … is set to 12.4/13.4"**
-Newer Xcode versions reject pods that target iOS versions below 15. The `post_install` hook in `ios/Podfile` raises them. Re-run `pod install` if you see this.
+Newer Xcode versions reject pods that target iOS versions below 15. The `post_install` hook in `apps/storybook/ios/Podfile` raises them. Re-run `pod install` if you see this.
 
 **Xcode build fails in `fmt/format-inl.h` with "call to consteval function … is not a constant expression"**
-`fmt` 11, which React Native depends on, doesn't compile with the newer Clang in C++20 mode. The `ios/Podfile` compiles just the `fmt` pod as C++17. Re-run `pod install` if you see this.
+`fmt` 11, which React Native depends on, doesn't compile with the newer Clang in C++20 mode. The `apps/storybook/ios/Podfile` compiles just the `fmt` pod as C++17. Re-run `pod install` if you see this.
 
 **"Bundle React Native code and images" fails with `No such file or directory`**
-This happens when the project path contains a space. The build phase in `ios/StorybookStarter.xcodeproj` quotes its script paths so that it works. Keep that change if you regenerate the Xcode project.
+This happens when the project path contains a space. The build phase in `apps/storybook/ios/StorybookStarter.xcodeproj` quotes its script paths so that it works. Keep that change if you regenerate the Xcode project.
 
 **Android build can't find the SDK**
-Set `ANDROID_HOME` or create `android/local.properties` as described in [Setup](#android).
+Set `ANDROID_HOME` or create `apps/storybook/android/local.properties` as described in [Setup](#android).
 
 **The app shows "Storybook is disabled in the withStorybook metro wrapper"**
 Metro was started without `STORYBOOK_ENABLED=true`, but the app expected Storybook, or the other way around. Stop Metro and start it again with the script for the mode you want.

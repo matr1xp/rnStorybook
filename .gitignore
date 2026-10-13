@@ -58,13 +58,16 @@ yarn-error.log
 
 # Ruby / CocoaPods
 **/Pods/
-/vendor/bundle/
+**/vendor/bundle/
+
+# Build output of workspace packages (react-native-builder-bob)
+packages/*/lib/
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 
 # testing
-/coverage
+**/coverage
 
 # Yarn
 .yarn/*
