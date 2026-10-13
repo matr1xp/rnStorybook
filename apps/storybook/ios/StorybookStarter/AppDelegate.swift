@@ -5,6 +5,8 @@ import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+  // Set by SceneDelegate. LogBox and Reanimated's keyboard observer still
+  // read UIApplication.shared.delegate.window.
   var window: UIWindow?
 
   var reactNativeDelegate: ReactNativeDelegate?
@@ -21,14 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-    window = UIWindow(frame: UIScreen.main.bounds)
-
-    factory.startReactNative(
-      withModuleName: "StorybookStarter",
-      in: window,
-      launchOptions: launchOptions
-    )
-
+    // The window and React Native root view are created in SceneDelegate.
     return true
   }
 }
